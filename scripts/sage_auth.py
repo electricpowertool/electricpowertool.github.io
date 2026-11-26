@@ -117,6 +117,7 @@ def main() -> None:
         headers={
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
+            "User-Agent": "EPT-Catalogue-Sync/1.0",
         },
         method="POST",
     )
@@ -137,7 +138,11 @@ def main() -> None:
     if access_token:
         biz_req = urllib.request.Request(
             f"{API_BASE}/businesses",
-            headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"},
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+                "User-Agent": "EPT-Catalogue-Sync/1.0",
+            },
         )
         try:
             with urllib.request.urlopen(biz_req, timeout=30) as resp:

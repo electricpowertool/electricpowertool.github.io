@@ -1249,7 +1249,16 @@
         <div id="resultCount" class="result-count">Loading products...</div>
         <div class="status-controls">
           <div id="viewToggle" class="view-toggle" role="group" aria-label="Layout view">
-            <button type="button" id="viewListBtn" class="view-btn" aria-pressed="true" title="List view">
+            <button type="button" id="viewCardsBtn" class="view-btn" aria-pressed="true" title="Card grid view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+              </svg>
+              <span>Cards</span>
+            </button>
+            <button type="button" id="viewListBtn" class="view-btn" aria-pressed="false" title="List view">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="8" y1="6" x2="21" y2="6"></line>
                 <line x1="8" y1="12" x2="21" y2="12"></line>
@@ -1259,15 +1268,6 @@
                 <line x1="3" y1="18" x2="3.01" y2="18"></line>
               </svg>
               <span>List</span>
-            </button>
-            <button type="button" id="viewCardsBtn" class="view-btn" aria-pressed="false" title="Card grid view">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-                <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-                <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-              </svg>
-              <span>Cards</span>
             </button>
           </div>
           <div class="sort-wrap">
@@ -1633,7 +1633,7 @@
       category: '',
       switchedFromCat: '',
       sort: 'relevance',
-      view: 'list',
+      view: 'cards',
       viewExplicit: false,
       incVat: false,
       showPrices: false,
@@ -2489,7 +2489,7 @@
       if (saved === 'cards' || saved === 'list') {
         state.view = saved;
       } else {
-        state.view = window.innerWidth >= 720 ? 'list' : 'cards';
+        state.view = 'cards';
       }
       syncViewUI();
     }

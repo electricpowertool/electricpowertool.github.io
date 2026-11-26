@@ -1409,7 +1409,12 @@
       pz2: { terms: ['pozi 2', 'pozi'], cats: ['Magnetic Bits'] }
     };
 
-    const STOP_WORDS = new Set(['for', 'with', 'the', 'and', 'or', 'a', 'an', 'to', 'of', 'in', 'on', 'need', 'want', 'please', 'size']);
+    const STOP_WORDS = new Set([
+      'for', 'with', 'the', 'and', 'or', 'a', 'an', 'to', 'of', 'in', 'on',
+      'need', 'want', 'please', 'what', 'is', 'are', 'your', 'show', 'me',
+      'find', 'get', 'give', 'do', 'you', 'have', 'got', 'any',
+      'size', 'sizes', 'diameter', 'width', 'length', 'thickness'
+    ]);
 
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
@@ -1582,9 +1587,9 @@
       const dimList = Array.from(dimNums);
       const mmNums = extractMmNums(descLower);
       const dimJoined = descLower.replace(/\s*[x×*]\s*/g, 'x').replace(/(\d)mmx/gi, '$1x');
-      const descNumSeq = (descLower.match(/\d+(?:\.\d+)?/g) || []).map(Number);
-      const primarySize = descNumSeq.length > 0 ? descNumSeq[0] : 0;
-      const maxDim = descNumSeq.length > 0 ? Math.max(...descNumSeq) : 0;
+      const phys = extractPhysicalDims(desc);
+      const primarySize = phys.sizeDim;
+      const maxDim = phys.lengthDim;
 
       return {
         idx,
@@ -1611,6 +1616,111 @@
       };
     });
 
+    function parseImperialVal(str) {
+      const m = (str || '').trim().match(/^(\d+)\s+(\d+)\/(\d+)$/);
+      if (m) return Number(m[1]) + Number(m[2]) / Number(m[3]);
+      const f = (str || '').trim().match(/^(\d+)\/(\d+)$/);
+      if (f) return Number(f[1]) / Number(f[2]);
+      return Number(str);
+    }
+
+    function extractPhysicalDims(desc) {
+      const rawLower = (desc || '').toLowerCase();
+      // Strip non-physical numbers: multi-letter model codes, electrical/grit/pack counts, steel grades
+      const s = rawLower
+        .replace(/\b[a-z]{2,}\d+(?:[./-]\d+)*[a-z]*\b/g, ' ')
+        .replace(/\b(?:m2|m35|m42|t\d+|pz\d+|ph\d+)\b/g, ' ')
+        .replace(/(?<![\d.])\d+(?:\.\d+)?\s*(?:v|volt|volts|w|watt|watts|kw|ah|amp|amps|g|grit|rpm|bar|psi|%|kg|lb|lbs|ml|core|cores|hole|holes|teeth|tooth|t|flute|flutes|way|gang|pin)\b/g, ' ')
+        .replace(/(?<![\d.])\d+\s*(?:piece|pieces|pce|pcs|pc|pack|pk|bag|box|set|sets|cutting\s+edge)\b/g, ' ')
+        .replace(/\b(?:bag|box|pack|pk|set|qty)\s+\d+\b/g, ' ')
+        .replace(/(?<![\d.])\d+\s*-\s*type\b/g, ' ');
+
+      const isLengthOnlyItem = /\b(shank|extension|lead|cable|cord|hose|tape|rule|ruler|level|crowbar|pry\s*bar)\b/.test(rawLower);
+      const isCircularOrFlat = /\b(disc|blade|wheel|pad|cup|brush|holesaw|hole\s*saw|scraper)\b/.test(rawLower);
+
+      let sizeDim = 0;
+      let lengthDim = 0;
+
+      // 1a. Carbide burr leading code with missing X (e.g. A1625X70 -> 16x25x70, G0820X70 -> 8x20x70)
+      const burrCompact = rawLower.match(/^[a-z](\d{2})(\d{2})[x×](\d+(?:\.\d+)?)/);
+      if (burrCompact) {
+        return { sizeDim: Number(burrCompact[1]), lengthDim: Number(burrCompact[3]) };
+      }
+
+      // 1b. Carbide burr leading code (e.g. A12X25X6X70, D12X10.8X56)
+      const burrMatch = rawLower.match(/^[a-z](\d{1,2}(?:\.\d+)?)[x×](\d+(?:\.\d+)?)(?:[x×](\d+(?:\.\d+)?))?(?:[x×](\d+(?:\.\d+)?))?/);
+      if (burrMatch) {
+        const nums = burrMatch.slice(1).filter(Boolean).map(Number);
+        return { sizeDim: nums[0], lengthDim: nums[nums.length - 1] };
+      }
+
+      // 2. Imperial fraction x length (e.g. 1/4 X 65MM, 1/2 X 20)
+      const impPair = s.match(/\b(\d+\s+\d+\/(?:2|4|8|16|32|64)|\d+\/(?:2|4|8|16|32|64))\s*(?:"|in)?\s*[x×]\s*(\d+(?:\.\d+)?)\s*(mm)?/i);
+      if (impPair) {
+        const dMm = Math.round(parseImperialVal(impPair[1]) * 25.4 * 100) / 100;
+        const second = Number(impPair[2]);
+        return { sizeDim: dMm, lengthDim: impPair[3] ? second : 0 };
+      }
+
+      // 3. Metric dimension pair/chain (e.g. 38 X 1000MM, 115 X 22.23MM, 12 X 600MM)
+      const pairMatch = s.match(/(?<![\d.])(\d+(?:\.\d+)?)\s*(?:mm)?\s*[x×]\s*(\d+(?:\.\d+)?)(?:\s*[x×]\s*(\d+(?:\.\d+)?))?\s*(mm)?/i);
+      if (pairMatch) {
+        const a = Number(pairMatch[1]);
+        const b = Number(pairMatch[2]);
+        const c = pairMatch[3] ? Number(pairMatch[3]) : null;
+        if (c !== null) {
+          sizeDim = a;
+          lengthDim = Math.max(b, c);
+        } else if (isCircularOrFlat && a >= b) {
+          sizeDim = a;
+          lengthDim = a;
+        } else if (a <= b) {
+          sizeDim = a;
+          lengthDim = b;
+        } else {
+          sizeDim = a;
+          lengthDim = a;
+        }
+        return { sizeDim, lengthDim };
+      }
+
+      // 4. Explicit mm dimension(s) + optional meter length (e.g. 1.5MM cable 100M, 152MM hole saw, 500MM shank)
+      const mmMatches = Array.from(s.matchAll(/(?<![\d.])(\d+(?:\.\d+)?)\s*mm\b/gi), (m) => Number(m[1]));
+      const meterMatch = s.match(/(?<![\d.])(\d+(?:\.\d+)?)\s*m\b/i);
+      if (mmMatches.length > 0) {
+        const val = /\d+(?:\.\d+)?\s*mm\s*-\s*\d+(?:\.\d+)?\s*mm/i.test(s)
+          ? Math.max(...mmMatches)
+          : mmMatches[0];
+        if (isLengthOnlyItem && !meterMatch) {
+          lengthDim = val;
+        } else {
+          sizeDim = val;
+          lengthDim = meterMatch ? Number(meterMatch[1]) * 1000 : val;
+        }
+        return { sizeDim, lengthDim };
+      }
+
+      // 5. Explicit meters only (e.g. 5M measuring tape, 2.5M cord)
+      if (meterMatch) {
+        return { sizeDim: 0, lengthDim: Number(meterMatch[1]) * 1000 };
+      }
+
+      // 6. Explicit inches / imperial fraction (e.g. 36" pipe wrench, 1/2" tap)
+      const inMatch = s.match(/(?<![\d.])(\d+\s+\d+\/(?:2|4|8|16|32|64)|\d+\/(?:2|4|8|16|32|64)|\d+(?:\.\d+)?)\s*(?:"|inch\b|inches\b)/i);
+      if (inMatch) {
+        const val = Math.round(parseImperialVal(inMatch[1]) * 25.4 * 100) / 100;
+        return isLengthOnlyItem ? { sizeDim: 0, lengthDim: val } : { sizeDim: val, lengthDim: val };
+      }
+
+      // 7. Metric thread M3..M64
+      const threadMatch = rawLower.match(/\bm(\d{1,2}(?:\.\d+)?)\b/);
+      if (threadMatch && !/\b(?:m2|m35|m42)\b/.test(threadMatch[0])) {
+        return { sizeDim: Number(threadMatch[1]), lengthDim: 0 };
+      }
+
+      return { sizeDim: 0, lengthDim: 0 };
+    }
+
     // Category stats
     const catCounts = new Map();
     for (const p of PRODUCTS) {
@@ -1633,6 +1743,7 @@
       category: '',
       switchedFromCat: '',
       sort: 'relevance',
+      sortManual: false,
       view: 'cards',
       viewExplicit: false,
       incVat: false,
@@ -1978,8 +2089,10 @@
       }
 
       q = q.replace(/sds\s*\+/g, 'sds plus ');
-      q = q.replace(/sds[\s-]+max/g, 'sds max ');
-      q = q.replace(/sds[\s-]+plus/g, 'sds plus ');
+      q = q.replace(/sds[\s-]*max\b/g, 'sds max ');
+      q = q.replace(/sds[\s-]*plus\b/g, 'sds plus ');
+      q = q.replace(/\bdrillbits?\b/g, 'drill bit');
+      q = q.replace(/\bholesaws?\b/g, 'hole saw');
 
       // Extract multi-word stock & price phrases
       let stockFilter = null;
@@ -1994,35 +2107,71 @@
         stockFilter = 'out';
         expanded = expanded.replace(/\bout[\s-]+of[\s-]+stock\b|\boutofstock\b/g, ' ');
       }
-      if (/\bmost\s+expensive\b|\bhighest\s+price\b|\bpriciest\b|\bexpensive\b/.test(expanded)) {
+      if (/\bmost\s+expensive\b|\bhighest\s+price\b|\bpriciest\b|\bexpensive\b|\bdearest\b/.test(expanded)) {
         sortIntent = 'price-desc';
         sortLabel = 'Highest price first';
-        expanded = expanded.replace(/\bmost\s+expensive\b|\bhighest\s+price\b|\bpriciest\b|\bexpensive\b/g, ' ');
+        expanded = expanded.replace(/\bmost\s+expensive\b|\bhighest\s+price\b|\bpriciest\b|\bexpensive\b|\bdearest\b/g, ' ');
       } else if (/\blowest\s+price\b|\bcheapest\b|\bbudget\b/.test(expanded)) {
         sortIntent = 'price-asc';
         sortLabel = 'Lowest price first';
         expanded = expanded.replace(/\blowest\s+price\b|\bcheapest\b|\bbudget\b/g, ' ');
+      } else if (/\bmost\s+(?:in\s+)?stock\b|\bhighest\s+stock\b/.test(expanded)) {
+        sortIntent = 'qty-desc';
+        sortLabel = 'Most in stock first';
+        expanded = expanded.replace(/\bmost\s+(?:in\s+)?stock\b|\bhighest\s+stock\b/g, ' ');
       }
 
-      // Extract size superlative modifiers (careful not to steal "sds max")
-      if (/\b(biggest|largest|widest|heaviest)\b/.test(expanded) || (!/\bsds\s+max\b/.test(expanded) && /\bmax\b/.test(expanded))) {
-        sortIntent = 'size-desc';
-        sortLabel = 'Largest size first';
-        expanded = expanded.replace(/\b(biggest|largest|widest|heaviest)\b/g, ' ');
-        if (!/\bsds\s+max\b/.test(q)) expanded = expanded.replace(/\bmax\b/g, ' ');
-      } else if (/\b(longest|deepest)\b/.test(expanded)) {
-        sortIntent = 'len-desc';
-        sortLabel = 'Longest first';
-        expanded = expanded.replace(/\b(longest|deepest)\b/g, ' ');
-      } else if (/\b(smallest|tiniest|thinnest|narrowest)\b/.test(expanded)) {
-        sortIntent = 'size-asc';
-        sortLabel = 'Smallest size first';
-        expanded = expanded.replace(/\b(smallest|tiniest|thinnest|narrowest)\b/g, ' ');
-      } else if (/\bshortest\b/.test(expanded)) {
-        sortIntent = 'len-asc';
-        sortLabel = 'Shortest first';
-        expanded = expanded.replace(/\bshortest\b/g, ' ');
+      // Extract size/length superlative modifiers (including common 1-letter typos; never steal "sds max")
+      const SUPERLATIVE_RULES = [
+        { intent: 'size-desc', label: 'Largest size first', words: ['biggest', 'largest', 'widest', 'thickest', 'fattest', 'heaviest', 'maximum'] },
+        { intent: 'len-desc', label: 'Longest first', words: ['longest', 'deepest', 'tallest'] },
+        { intent: 'size-asc', label: 'Smallest size first', words: ['smallest', 'tiniest', 'thinnest', 'narrowest', 'minimum'] },
+        { intent: 'len-asc', label: 'Shortest first', words: ['shortest', 'shallowest'] },
+      ];
+      function matchesSuperlativeWord(word, kw) {
+        if (word === kw) return true;
+        if (word.length < 6) return false;
+        if (levenshtein1OrLess(word, kw)) return true;
+        if (word.length === kw.length) {
+          let diffs = [];
+          for (let i = 0; i < word.length; i++) {
+            if (word[i] !== kw[i]) diffs.push(i);
+            if (diffs.length > 2) return false;
+          }
+          if (diffs.length === 2 && diffs[1] === diffs[0] + 1 &&
+              word[diffs[0]] === kw[diffs[1]] && word[diffs[1]] === kw[diffs[0]]) {
+            return true;
+          }
+        }
+        return false;
       }
+
+      const hasSdsMax = /\bsds\s+max\b/.test(q);
+      const keptWords = [];
+      for (const word of expanded.trim().split(/\s+/).filter(Boolean)) {
+        let matchedRule = null;
+        if (word === 'max' && !hasSdsMax) {
+          matchedRule = SUPERLATIVE_RULES[0];
+        } else if (word === 'min') {
+          matchedRule = SUPERLATIVE_RULES[2];
+        } else if (/^[a-z]{5,}$/.test(word)) {
+          for (const rule of SUPERLATIVE_RULES) {
+            if (rule.words.some((kw) => matchesSuperlativeWord(word, kw))) {
+              matchedRule = rule;
+              break;
+            }
+          }
+        }
+        if (matchedRule) {
+          if (!sortIntent) {
+            sortIntent = matchedRule.intent;
+            sortLabel = matchedRule.label;
+          }
+        } else {
+          keptWords.push(word);
+        }
+      }
+      expanded = keptWords.join(' ');
 
       const dimPairs = [];
       // Normalize "1 mm" -> "1mm" so spaced mm queries behave identically to "1mm"
@@ -2377,7 +2526,7 @@
         }
       }
 
-      const effectiveSort = (state.sort === 'relevance' && parsed.sortIntent)
+      const effectiveSort = (parsed.sortIntent && !state.sortManual)
         ? parsed.sortIntent
         : state.sort;
 
@@ -2387,7 +2536,7 @@
         matched.sort((a, b) => {
           const sa = a.primarySize > 0 ? a.primarySize : Number.MAX_SAFE_INTEGER;
           const sb = b.primarySize > 0 ? b.primarySize : Number.MAX_SAFE_INTEGER;
-          return (sa - sb) || (a.maxDim - b.maxDim) || compareDesc(a, b);
+          return (sa - sb) || ((a.maxDim > 0 ? a.maxDim : Number.MAX_SAFE_INTEGER) - (b.maxDim > 0 ? b.maxDim : Number.MAX_SAFE_INTEGER)) || compareDesc(a, b);
         });
       } else if (effectiveSort === 'len-desc') {
         matched.sort((a, b) => (b.maxDim - a.maxDim) || (b.primarySize - a.primarySize) || compareDesc(b, a));
@@ -2395,7 +2544,7 @@
         matched.sort((a, b) => {
           const la = a.maxDim > 0 ? a.maxDim : Number.MAX_SAFE_INTEGER;
           const lb = b.maxDim > 0 ? b.maxDim : Number.MAX_SAFE_INTEGER;
-          return (la - lb) || (a.primarySize - b.primarySize) || compareDesc(a, b);
+          return (la - lb) || ((a.primarySize > 0 ? a.primarySize : Number.MAX_SAFE_INTEGER) - (b.primarySize > 0 ? b.primarySize : Number.MAX_SAFE_INTEGER)) || compareDesc(a, b);
         });
       } else if (effectiveSort === 'relevance' && parsed.tokens.length > 0) {
         const scores = new Map();
@@ -2522,7 +2671,7 @@
         if (state.category) {
           countHtml += ` in <strong>${escapeHtml(state.category)}</strong>`;
         }
-        if (parsed.sortLabel && state.sort === 'relevance') {
+        if (parsed.sortLabel && !state.sortManual) {
           countHtml += `<span class="fuzzy-note">${escapeHtml(parsed.sortLabel)}</span>`;
         }
         if (parsed.stockFilter === 'in') {
@@ -2676,6 +2825,7 @@
     // Event Listeners
     searchInput.addEventListener('input', (e) => {
       state.query = e.target.value;
+      state.sortManual = false;
       if (!state.query.trim() && state.switchedFromCat) {
         state.category = state.switchedFromCat;
         state.switchedFromCat = '';
@@ -2688,6 +2838,7 @@
 
     clearBtn.addEventListener('click', () => {
       state.query = '';
+      state.sortManual = false;
       if (state.switchedFromCat) {
         state.category = state.switchedFromCat;
         state.switchedFromCat = '';
@@ -2707,6 +2858,7 @@
 
     sortSelect.addEventListener('change', (e) => {
       state.sort = e.target.value;
+      state.sortManual = true;
       state.visibleCount = PAGE_SIZE;
       render();
     });
@@ -2745,6 +2897,7 @@
       const chip = e.target.closest('.hint-chip');
       if (!chip) return;
       state.query = chip.dataset.q || '';
+      state.sortManual = false;
       searchInput.value = state.query;
       state.visibleCount = PAGE_SIZE;
       syncUrl();
@@ -2760,6 +2913,7 @@
       state.query = '';
       state.category = '';
       state.switchedFromCat = '';
+      state.sortManual = false;
       state.visibleCount = PAGE_SIZE;
       searchInput.value = '';
       syncCategoryUI();
@@ -2779,6 +2933,7 @@
         } else {
           state.sort = targetSort;
         }
+        state.sortManual = true;
         sortSelect.value = state.sort;
         render();
       });

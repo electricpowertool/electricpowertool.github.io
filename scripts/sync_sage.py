@@ -168,9 +168,67 @@ class SageClient:
         if not self.access_token or (time.monotonic() - self.token_obtained_at) > 240:
             self.refresh()
 
+    def _resolve_business_id(self) -> str:
+        """Validate SAGE_BUSINESS_ID against /businesses so a malformed secret cannot cause HTTP 500."""
+        self._ensure_token()
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+        try:
+            data, _ = _http_json(f"{API_BASE}/businesses", headers=headers)
+        except Exception as exc:  # noqa: BLE001
+            print(f"Note: could not query /businesses ({exc}); continuing with configured business ID.")
+            return self.business_id
+
+        businesses = data.get("$items") or []
+        valid_ids = {b.get("id", "").strip(): b.get("displayed_as", "") for b in businesses if b.get("id")}
+        print(f"Sage account has {len(valid_ids)} accessible business(es).")
+
+        candidate = self.business_id
+        if candidate and ":" in candidate:
+            # Handle accidental copy of "- Business Name: <id>" format.
+            candidate = candidate.rsplit(":", 1)[-1].strip()
+
+        if candidate and candidate in valid_ids:
+            print(f"Using configured Sage business: {valid_ids[candidate]} ({candidate})")
+            return candidate
+
+        if candidate and candidate not in valid_ids:
+            print(
+                "Warning: SAGE_BUSINESS_ID did not match any business on this Sage account; "
+                "falling back to lead business."
+            )
+
+        if len(valid_ids) == 1:
+            only_id, only_name = next(iter(valid_ids.items()))
+            print(f"Using Sage business: {only_name} ({only_id})")
+            return only_id
+
+        return ""
+
     def fetch_all_stock_items(self) -> list[dict]:
+        resolved_business_id = self._resolve_business_id()
+
+        query_variants = [
+            "attributes=item_code,description,sales_prices,quantity_in_stock,barcode,active&items_per_page=100",
+            "attributes=all&items_per_page=50",
+        ]
+
+        last_err: Exception | None = None
+        for idx, query in enumerate(query_variants):
+            try:
+                return self._fetch_stock_items_with_query(query, resolved_business_id)
+            except RuntimeError as exc:
+                last_err = exc
+                if idx < len(query_variants) - 1:
+                    print(f"Query variant {idx + 1} failed ({exc}); trying fallback query...", file=sys.stderr)
+                    continue
+                raise
+
+        assert last_err is not None
+        raise last_err
+
+    def _fetch_stock_items_with_query(self, query: str, business_id: str) -> list[dict]:
         items: list[dict] = []
-        next_url: str | None = f"{API_BASE}/stock_items?attributes=all&items_per_page=200"
+        next_url: str | None = f"{API_BASE}/stock_items?{query}"
         logged_business = False
         page = 0
 
@@ -178,8 +236,8 @@ class SageClient:
             self._ensure_token()
             page += 1
             headers = {"Authorization": f"Bearer {self.access_token}"}
-            if self.business_id:
-                headers["X-Business"] = self.business_id
+            if business_id:
+                headers["X-Business"] = business_id
 
             data, resp_headers = _http_json(next_url, headers=headers)
             if not logged_business:

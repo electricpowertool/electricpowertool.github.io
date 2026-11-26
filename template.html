@@ -1259,6 +1259,71 @@
 
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
+    const NATURAL_TOKEN_RE = /(\d+)\s+(\d+)\/(2|4|8|16|32|64)(?![\d/])|(\d+)\/(2|4|8|16|32|64)(?![\d/])|\d+(?:\.\d+)?/g;
+
+    function parseNaturalKey(str) {
+      const s = str || '';
+      const parts = [];
+      let lastIndex = 0;
+      NATURAL_TOKEN_RE.lastIndex = 0;
+      let m;
+      while ((m = NATURAL_TOKEN_RE.exec(s)) !== null) {
+        if (m.index > lastIndex) {
+          parts.push(s.slice(lastIndex, m.index));
+        }
+        if (m[1] !== undefined) {
+          const whole = parseInt(m[1], 10);
+          const num = parseInt(m[2], 10);
+          const den = parseInt(m[3], 10);
+          if (num < den) {
+            parts.push(whole + num / den);
+          } else {
+            parts.push(whole, ' ', num, '/', den);
+          }
+        } else if (m[4] !== undefined) {
+          const num = parseInt(m[4], 10);
+          const den = parseInt(m[5], 10);
+          if (num < den) {
+            parts.push(num / den);
+          } else {
+            parts.push(num, '/', den);
+          }
+        } else {
+          parts.push(parseFloat(m[0]));
+        }
+        lastIndex = NATURAL_TOKEN_RE.lastIndex;
+      }
+      if (lastIndex < s.length) {
+        parts.push(s.slice(lastIndex));
+      }
+      return parts;
+    }
+
+    function compareNaturalKeys(aKey, bKey, aStr, bStr) {
+      const len = Math.min(aKey.length, bKey.length);
+      for (let i = 0; i < len; i++) {
+        const av = aKey[i];
+        const bv = bKey[i];
+        if (av === bv) continue;
+        const aNum = typeof av === 'number';
+        const bNum = typeof bv === 'number';
+        if (aNum && bNum) return av - bv;
+        if (aNum !== bNum) return aNum ? -1 : 1;
+        const cmp = collator.compare(av, bv);
+        if (cmp !== 0) return cmp;
+      }
+      if (aKey.length !== bKey.length) return aKey.length - bKey.length;
+      return collator.compare(aStr, bStr);
+    }
+
+    function compareDesc(a, b) {
+      return compareNaturalKeys(a.descSortKey, b.descSortKey, a.desc, b.desc);
+    }
+
+    function compareCode(a, b) {
+      return compareNaturalKeys(a.codeSortKey, b.codeSortKey, a.code, b.code);
+    }
+
     function normalizeText(str) {
       let s = (str || '').toLowerCase();
       s = s.replace(/sds\s*\+/g, 'sds plus ');
@@ -1385,6 +1450,8 @@
         dimJoined,
         primarySize,
         maxDim,
+        descSortKey: parseNaturalKey(desc),
+        codeSortKey: parseNaturalKey(code),
         searchBlob: codeLower + ' ' + compactCode(code) + ' ' + cleanTokensStr,
         words
       };
@@ -2163,20 +2230,20 @@
         : state.sort;
 
       if (effectiveSort === 'size-desc') {
-        matched.sort((a, b) => (b.primarySize - a.primarySize) || (b.maxDim - a.maxDim) || collator.compare(b.desc, a.desc));
+        matched.sort((a, b) => (b.primarySize - a.primarySize) || (b.maxDim - a.maxDim) || compareDesc(b, a));
       } else if (effectiveSort === 'size-asc') {
         matched.sort((a, b) => {
           const sa = a.primarySize > 0 ? a.primarySize : Number.MAX_SAFE_INTEGER;
           const sb = b.primarySize > 0 ? b.primarySize : Number.MAX_SAFE_INTEGER;
-          return (sa - sb) || (a.maxDim - b.maxDim) || collator.compare(a.desc, b.desc);
+          return (sa - sb) || (a.maxDim - b.maxDim) || compareDesc(a, b);
         });
       } else if (effectiveSort === 'len-desc') {
-        matched.sort((a, b) => (b.maxDim - a.maxDim) || (b.primarySize - a.primarySize) || collator.compare(b.desc, a.desc));
+        matched.sort((a, b) => (b.maxDim - a.maxDim) || (b.primarySize - a.primarySize) || compareDesc(b, a));
       } else if (effectiveSort === 'len-asc') {
         matched.sort((a, b) => {
           const la = a.maxDim > 0 ? a.maxDim : Number.MAX_SAFE_INTEGER;
           const lb = b.maxDim > 0 ? b.maxDim : Number.MAX_SAFE_INTEGER;
-          return (la - lb) || (a.primarySize - b.primarySize) || collator.compare(a.desc, b.desc);
+          return (la - lb) || (a.primarySize - b.primarySize) || compareDesc(a, b);
         });
       } else if (effectiveSort === 'relevance' && parsed.tokens.length > 0) {
         const scores = new Map();
@@ -2186,25 +2253,25 @@
         matched.sort((a, b) => {
           const diff = scores.get(b.idx) - scores.get(a.idx);
           if (diff !== 0) return diff;
-          return collator.compare(a.desc, b.desc);
+          return compareDesc(a, b);
         });
       } else if (effectiveSort === 'price-asc') {
         matched.sort((a, b) => {
           const pa = a.price > 0 ? a.price : Number.MAX_SAFE_INTEGER;
           const pb = b.price > 0 ? b.price : Number.MAX_SAFE_INTEGER;
-          return pa - pb || collator.compare(a.desc, b.desc);
+          return pa - pb || compareDesc(a, b);
         });
       } else if (effectiveSort === 'price-desc') {
-        matched.sort((a, b) => b.price - a.price || collator.compare(a.desc, b.desc));
+        matched.sort((a, b) => b.price - a.price || compareDesc(a, b));
       } else if (effectiveSort === 'qty-desc') {
-        matched.sort((a, b) => b.qty - a.qty || collator.compare(a.desc, b.desc));
+        matched.sort((a, b) => b.qty - a.qty || compareDesc(a, b));
       } else if (effectiveSort === 'qty-asc') {
-        matched.sort((a, b) => a.qty - b.qty || collator.compare(a.desc, b.desc));
+        matched.sort((a, b) => a.qty - b.qty || compareDesc(a, b));
       } else if (effectiveSort === 'code') {
-        matched.sort((a, b) => collator.compare(a.code, b.code));
+        matched.sort(compareCode);
       } else {
         // Default natural size/description order
-        matched.sort((a, b) => collator.compare(a.desc, b.desc));
+        matched.sort(compareDesc);
       }
 
       return { matched, parsed };

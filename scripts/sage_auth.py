@@ -33,9 +33,12 @@ API_BASE = "https://api.accounting.sage.com/v3.1"
 def main() -> None:
     print("=== Sage Business Cloud Accounting (Ireland) — One-Time Auth ===\n")
     client_id = input("Sage Client ID: ").strip()
-    client_secret = getpass.getpass("Sage Client Secret (hidden): ").strip()
+    client_secret = input("Sage Client Secret: ").strip()
     if not client_id or not client_secret:
         raise SystemExit("Both Client ID and Client Secret are required.")
+    if set(client_secret) <= {"*", "•"}:
+        raise SystemExit("Client Secret looks masked — click 'Show' in Sage App Registry before copying.")
+    print(f"Using Client ID ({len(client_id)} chars) and Client Secret ({len(client_secret)} chars).")
 
     state = secrets.token_urlsafe(16)
     auth_params = urllib.parse.urlencode(

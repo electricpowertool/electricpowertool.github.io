@@ -1,0 +1,62 @@
+name: Sync Stock from Sage
+
+on:
+  schedule:
+    # Runs every morning at 07:00 UTC (7:00 AM GMT / 8:00 AM IST in Ireland)
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: "Rebuild index.html even if stock & prices haven't changed"
+        required: false
+        default: false
+        type: boolean
+
+# Prevent two runs from refreshing the same Sage refresh token concurrently.
+concurrency:
+  group: sage-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync stock items from Sage Accounting Ireland
+        env:
+          SAGE_CLIENT_ID: ${{ secrets.SAGE_CLIENT_ID }}
+          SAGE_CLIENT_SECRET: ${{ secrets.SAGE_CLIENT_SECRET }}
+          SAGE_REFRESH_TOKEN: ${{ secrets.SAGE_REFRESH_TOKEN }}
+          SAGE_BUSINESS_ID: ${{ secrets.SAGE_BUSINESS_ID }}
+          GH_SECRETS_PAT: ${{ secrets.GH_SECRETS_PAT }}
+          CATALOG_TITLE: ${{ vars.CATALOG_TITLE }}
+          CATALOG_VIEW_CODE: ${{ vars.CATALOG_VIEW_CODE }}
+          CATALOG_PRICE_CODE: ${{ vars.CATALOG_PRICE_CODE }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.force_rebuild }}" = "true" ]; then
+            ARGS="--force"
+          fi
+          python3 scripts/sync_sage.py $ARGS
+
+      - name: Commit and publish updated catalogue
+        run: |
+          if [ -z "$(git status --porcelain -- index.html .data-fingerprint)" ]; then
+            echo "No changes to publish."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .data-fingerprint
+          git commit -m "Update stock catalogue from Sage ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git push

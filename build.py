@@ -15,6 +15,7 @@ import argparse
 import base64
 import csv
 import hashlib
+import hmac
 import html
 import json
 import secrets
@@ -25,6 +26,15 @@ KEY_ROUNDS = 5000
 
 def normalize_code(code: str) -> str:
     return "".join(code.split()).upper()
+
+
+def normalize_number(raw: object) -> int | float:
+    text = str(raw if raw is not None else "0").replace(",", "").strip()
+    try:
+        val = round(float(text), 2)
+        return int(val) if val.is_integer() else val
+    except ValueError:
+        return 0
 
 
 def derive_key(salt: str, code: str) -> bytes:
@@ -53,8 +63,33 @@ def encrypt_prices(prices: list[float], key: bytes) -> str:
     return base64.b64encode(bytes(out)).decode("ascii")
 
 
-def build_catalog(
-    csv_path: Path,
+def compute_fingerprint(
+    products: list[list],
+    prices: list[float],
+    template_text: str,
+    title: str,
+    view_code: str,
+    price_code: str,
+) -> str:
+    """Keyed deterministic fingerprint of catalogue inputs so unchanged builds are skipped without leaking prices."""
+    key = derive_key("fingerprint", price_code)
+    payload = json.dumps(
+        {
+            "title": title,
+            "view_code": normalize_code(view_code),
+            "template_sha256": hashlib.sha256(template_text.encode("utf-8")).hexdigest(),
+            "products": products,
+            "prices": prices,
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hmac.new(key, payload, hashlib.sha256).hexdigest()
+
+
+def render_catalog(
+    products: list[list],
+    prices: list[float],
     template_path: Path,
     output_path: Path,
     title: str,
@@ -63,40 +98,6 @@ def build_catalog(
 ) -> int:
     if normalize_code(view_code) == normalize_code(price_code):
         raise ValueError("view-code and price-code must be different")
-
-    products = []
-    prices = []
-    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            active = (row.get("Active") or "Yes").strip().lower()
-            if active not in ("yes", "y", "true", "1", ""):
-                continue
-
-            code = (row.get("Item Code*") or row.get("Item Code") or "").strip()
-            desc = (row.get("Description*") or row.get("Description") or "").strip()
-            if not code or not desc:
-                continue
-
-            raw_price = (row.get("Sales Price 1 Value") or "0").replace(",", "").strip()
-            try:
-                price_val = round(float(raw_price), 2)
-                price = int(price_val) if price_val.is_integer() else price_val
-            except ValueError:
-                price = 0
-
-            raw_qty = (row.get("Quantity In Stock") or "0").replace(",", "").strip()
-            try:
-                qty_val = round(float(raw_qty), 2)
-                qty = int(qty_val) if qty_val.is_integer() else qty_val
-            except ValueError:
-                qty = 0
-
-            category = (row.get("Category") or "").strip() or "Other"
-            barcode = (row.get("Barcode") or "").strip()
-
-            products.append([code, desc, category, barcode, qty])
-            prices.append(price)
 
     salt = secrets.token_hex(8)
     view_key = derive_key(salt, view_code)
@@ -120,6 +121,47 @@ def build_catalog(
     )
     output_path.write_text(rendered, encoding="utf-8")
     return len(products)
+
+
+def build_catalog(
+    csv_path: Path,
+    template_path: Path,
+    output_path: Path,
+    title: str,
+    view_code: str,
+    price_code: str,
+) -> int:
+    products = []
+    prices = []
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            active = (row.get("Active") or "Yes").strip().lower()
+            if active not in ("yes", "y", "true", "1", ""):
+                continue
+
+            code = (row.get("Item Code*") or row.get("Item Code") or "").strip()
+            desc = (row.get("Description*") or row.get("Description") or "").strip()
+            if not code or not desc:
+                continue
+
+            price = normalize_number(row.get("Sales Price 1 Value"))
+            qty = normalize_number(row.get("Quantity In Stock"))
+            category = (row.get("Category") or "").strip() or "Other"
+            barcode = (row.get("Barcode") or "").strip()
+
+            products.append([code, desc, category, barcode, qty])
+            prices.append(price)
+
+    return render_catalog(
+        products=products,
+        prices=prices,
+        template_path=template_path,
+        output_path=output_path,
+        title=title,
+        view_code=view_code,
+        price_code=price_code,
+    )
 
 
 def main() -> None:

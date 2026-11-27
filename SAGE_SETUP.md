@@ -1,6 +1,6 @@
 # Automated Daily Sage Accounting Sync Setup
 
-This repository includes a daily GitHub Actions workflow ([`.github/workflows/sync-sage.yml`](.github/workflows/sync-sage.yml)) that pulls live active stock items from **Sage Business Cloud Accounting (Ireland, API v3.1)** every morning at **07:00 UTC** (7:00 AM GMT / 8:00 AM IST), rebuilds `index.html`, and publishes it automatically to GitHub Pages.
+This repository includes a daily GitHub Actions workflow ([`.github/workflows/sync-sage.yml`](.github/workflows/sync-sage.yml)) that pulls live active stock items from **Sage Business Cloud Accounting (Ireland, API v3.1)** every evening after 6 PM Irish time (**18:17 UTC** with a **19:43 UTC** backup slot), rebuilds `index.html`, and publishes it automatically to GitHub Pages.
 
 - Uses **read-only** (`readonly`) Sage OAuth access — it can never edit your books.
 - Automatically saves Sage's rotated 31-day refresh token after every run so it stays connected indefinitely.

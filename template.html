@@ -1142,6 +1142,603 @@
       color: var(--danger);
       min-height: 18px;
     }
+
+    /* Mockup Mode Banner (Stock Take & Order Taking) */
+    .mode-bar {
+      display: none;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 0;
+    }
+
+    body.mode-stock .mode-bar {
+      display: block;
+      background: #fffbeb;
+      border-bottom-color: var(--brand-border);
+    }
+
+    body.mode-order .mode-bar {
+      display: block;
+      background: #ecfdf5;
+      border-bottom-color: var(--success-border);
+    }
+
+    .mode-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mode-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    body.mode-stock .mode-pill {
+      background: var(--accent);
+      color: #121824;
+    }
+
+    body.mode-order .mode-pill {
+      background: var(--success);
+      color: #ffffff;
+    }
+
+    .mode-hint {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+    }
+
+    .mode-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-summary-text {
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+
+    .mode-action-btn {
+      appearance: none;
+      border: none;
+      border-radius: 9px;
+      background: var(--header-bg);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .mode-action-btn:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    .mode-action-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Interactive Card & Row states in Stock / Order modes */
+    body.mode-stock .product-card,
+    body.mode-order .product-card,
+    body.mode-stock .catalog-table tbody tr,
+    body.mode-order .catalog-table tbody tr {
+      cursor: pointer;
+    }
+
+    body.mode-stock .product-card:hover {
+      border-color: var(--accent);
+    }
+
+    body.mode-order .product-card:hover {
+      border-color: #10b981;
+    }
+
+    .product-card.is-edited {
+      border-color: var(--accent);
+      background: #fffdf5;
+      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.16), var(--shadow-xs);
+    }
+
+    .product-card.is-ordered {
+      border-color: #10b981;
+      background: #f5fdf9;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.16), var(--shadow-xs);
+    }
+
+    .catalog-table tbody tr.is-edited {
+      background: #fffbeb;
+    }
+
+    .catalog-table tbody tr.is-ordered {
+      background: #ecfdf5;
+    }
+
+    .stock-badge.edited {
+      background: var(--brand-bg);
+      color: var(--brand-ink);
+      border: 1px solid var(--brand-border);
+    }
+
+    .stock-badge.edited::before {
+      background: var(--accent);
+    }
+
+    .order-qty-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--success);
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .card-tap-hint {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      letter-spacing: 0.01em;
+    }
+
+    /* Number Pad Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(15, 23, 42, 0.62);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .numpad-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .numpad-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .numpad-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .numpad-mode-tag {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+    }
+
+    .modal-close-btn {
+      appearance: none;
+      border: none;
+      background: var(--surface-subtle);
+      color: var(--ink-secondary);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close-btn:hover {
+      background: var(--border);
+      color: var(--ink);
+    }
+
+    .numpad-desc {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    .numpad-meta {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .numpad-display {
+      background: var(--surface-subtle);
+      border: 1.5px solid var(--border-strong);
+      border-radius: 12px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .numpad-value {
+      font-size: 38px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+
+    .numpad-sub {
+      margin-top: 4px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      min-height: 18px;
+    }
+
+    .numpad-sub.diff-pos {
+      color: var(--success);
+    }
+
+    .numpad-sub.diff-neg {
+      color: var(--danger);
+    }
+
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .numpad-key {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 22px;
+      font-weight: 700;
+      height: 54px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: var(--shadow-xs);
+      transition: background 0.1s ease, transform 0.08s ease, border-color 0.1s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .numpad-key:hover {
+      background: var(--surface-hover);
+      border-color: var(--ink-muted);
+    }
+
+    .numpad-key:active {
+      transform: scale(0.96);
+      background: var(--surface-subtle);
+    }
+
+    .numpad-key.key-fn {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      background: var(--surface-subtle);
+    }
+
+    .numpad-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .numpad-actions button {
+      flex: 1;
+      height: 44px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .numpad-btn-secondary {
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--ink-secondary);
+    }
+
+    .numpad-btn-secondary:hover {
+      background: var(--surface-subtle);
+      color: var(--ink);
+    }
+
+    .numpad-btn-danger {
+      border: 1px solid var(--danger-border);
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .numpad-btn-primary {
+      border: none;
+      background: var(--header-bg);
+      color: #ffffff;
+      flex: 1.5 !important;
+    }
+
+    .numpad-btn-primary:hover {
+      background: #1e293b;
+    }
+
+    /* Review / Order Summary Modal */
+    .review-card {
+      width: 100%;
+      max-width: 600px;
+      max-height: 88vh;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .review-header h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .review-note {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 8px 12px;
+    }
+
+    .order-customer-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 520px) {
+      .order-customer-fields {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .order-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink);
+      background: var(--surface);
+      outline: none;
+    }
+
+    .order-input:focus {
+      border-color: var(--accent);
+    }
+
+    .review-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 44vh;
+      padding-right: 2px;
+    }
+
+    .review-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .review-item-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .review-item-code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+    }
+
+    .review-item-desc {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
+    .review-item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .review-qty-btn {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .review-qty-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .review-remove-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--ink-muted);
+      font-size: 18px;
+      line-height: 1;
+      padding: 4px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .review-remove-btn:hover {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .review-totals {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .review-total-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--ink-secondary);
+      font-weight: 600;
+    }
+
+    .review-total-row.grand {
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .review-footer {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .review-footer button {
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(16px);
+      z-index: 120;
+      background: var(--header-bg);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      max-width: calc(100vw - 32px);
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body class="locked">
@@ -1193,6 +1790,21 @@
       </div>
     </div>
   </header>
+
+  <section id="modeBar" class="mode-bar" aria-live="polite">
+    <div class="container">
+      <div class="mode-bar-inner">
+        <div class="mode-bar-left">
+          <span id="modePill" class="mode-pill">Stock Take Mockup</span>
+          <span id="modeHint" class="mode-hint">Tap any item to enter a new stock count</span>
+        </div>
+        <div class="mode-bar-right">
+          <span id="modeSummaryText" class="mode-summary-text">0 changes</span>
+          <button type="button" id="modeReviewBtn" class="mode-action-btn" disabled>Review Changes</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="search-dock" aria-label="Search products">
     <div class="container">
@@ -1321,12 +1933,78 @@
     Search
   </button>
 
+  <div id="numpadOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="numpadDesc">
+    <div class="numpad-card">
+      <div class="numpad-header">
+        <div class="numpad-top-row">
+          <span id="numpadCode" class="code-badge">SKU</span>
+          <span id="numpadModeTag" class="numpad-mode-tag">Stock Count</span>
+          <button type="button" id="numpadCloseBtn" class="modal-close-btn" aria-label="Close">&times;</button>
+        </div>
+        <div id="numpadDesc" class="numpad-desc">Product description</div>
+        <div id="numpadMeta" class="numpad-meta">Current Sage stock: 0</div>
+      </div>
+
+      <div class="numpad-display">
+        <div id="numpadValue" class="numpad-value">0</div>
+        <div id="numpadSub" class="numpad-sub"></div>
+      </div>
+
+      <div id="numpadGrid" class="numpad-grid">
+        <button type="button" class="numpad-key" data-key="1">1</button>
+        <button type="button" class="numpad-key" data-key="2">2</button>
+        <button type="button" class="numpad-key" data-key="3">3</button>
+        <button type="button" class="numpad-key" data-key="4">4</button>
+        <button type="button" class="numpad-key" data-key="5">5</button>
+        <button type="button" class="numpad-key" data-key="6">6</button>
+        <button type="button" class="numpad-key" data-key="7">7</button>
+        <button type="button" class="numpad-key" data-key="8">8</button>
+        <button type="button" class="numpad-key" data-key="9">9</button>
+        <button type="button" class="numpad-key key-fn" data-key="clear">Clear</button>
+        <button type="button" class="numpad-key" data-key="0">0</button>
+        <button type="button" class="numpad-key key-fn" data-key="back" aria-label="Backspace">&#9003;</button>
+      </div>
+
+      <div class="numpad-actions">
+        <button type="button" id="numpadCancelBtn" class="numpad-btn-secondary">Cancel</button>
+        <button type="button" id="numpadRemoveBtn" class="numpad-btn-danger" style="display: none;">Reset</button>
+        <button type="button" id="numpadSaveBtn" class="numpad-btn-primary">Save Count</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reviewOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+    <div class="review-card">
+      <div class="review-header">
+        <h2 id="reviewTitle">Stock Take Changes</h2>
+        <button type="button" id="reviewCloseBtn" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div id="reviewNote" class="review-note">Mockup only — changes clear automatically on each login.</div>
+      <div id="orderCustomerFields" class="order-customer-fields" style="display: none;">
+        <input id="orderCustomerInput" class="order-input" type="text" placeholder="Customer / Account name (optional)" />
+        <input id="orderNotesInput" class="order-input" type="text" placeholder="Delivery / PO note (optional)" />
+      </div>
+      <div id="reviewList" class="review-list"></div>
+      <div id="reviewTotals" class="review-totals"></div>
+      <div class="review-footer">
+        <button type="button" id="reviewClearBtn" class="numpad-btn-secondary">Clear All</button>
+        <button type="button" id="reviewCopyBtn" class="numpad-btn-secondary">Copy Summary</button>
+        <button type="button" id="reviewSubmitBtn" class="numpad-btn-primary">Push to Sage (Mockup)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
   <script>
     // Embedded product catalog (prices encrypted separately): [code, description, category, barcode, qtyInStock]
     const RAW_PRODUCTS = __PRODUCTS_JSON__;
     const AUTH_SALT = '__AUTH_SALT__';
     const VIEW_CODE_HASH = '__VIEW_HASH__';
     const PRICE_CODE_HASH = '__PRICE_HASH__';
+    const STOCK_CODE_HASH = '__STOCK_HASH__';
+    const ORDER_CODE_HASH = '__ORDER_HASH__';
+    const WRAPPED_PRICE_KEY = '__WRAPPED_PRICE_KEY__';
     const ENCRYPTED_PRICES = '__ENCRYPTED_PRICES__';
     const KEY_ROUNDS = 5000;
     const ACCESS_STORAGE_KEY = 'ept_cat_access_v1';
@@ -1599,6 +2277,7 @@
         cat,
         barcode,
         qty,
+        baseQty: qty,
         codeLower,
         codeCompact: compactCode(code),
         descLower,
@@ -1739,6 +2418,7 @@
 
     // State
     let state = {
+      mode: 'view',
       query: '',
       category: '',
       switchedFromCat: '',
@@ -1754,6 +2434,12 @@
       categoriesExpanded: false
     };
 
+    // Session-only mockup stores (cleared automatically on every login / reload)
+    const stockEdits = new Map(); // product idx -> new count
+    const orderLines = new Map(); // product idx -> order qty
+    const numpadState = { idx: null, inputStr: '', fresh: true };
+    let toastTimer = null;
+
     // Elements
     const authOverlay = document.getElementById('authOverlay');
     const authForm = document.getElementById('authForm');
@@ -1761,6 +2447,11 @@
     const authError = document.getElementById('authError');
     const switchCodeBtn = document.getElementById('switchCodeBtn');
     const subtitleEl = document.getElementById('subtitle');
+    const modeBar = document.getElementById('modeBar');
+    const modePill = document.getElementById('modePill');
+    const modeHint = document.getElementById('modeHint');
+    const modeSummaryText = document.getElementById('modeSummaryText');
+    const modeReviewBtn = document.getElementById('modeReviewBtn');
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('clearBtn');
     const catToggleBtn = document.getElementById('catToggleBtn');
@@ -1784,6 +2475,31 @@
     const resetFiltersBtn = document.getElementById('resetFiltersBtn');
     const loadMoreWrap = document.getElementById('loadMoreWrap');
     const fabTop = document.getElementById('fabTop');
+    const numpadOverlay = document.getElementById('numpadOverlay');
+    const numpadCode = document.getElementById('numpadCode');
+    const numpadModeTag = document.getElementById('numpadModeTag');
+    const numpadDesc = document.getElementById('numpadDesc');
+    const numpadMeta = document.getElementById('numpadMeta');
+    const numpadValue = document.getElementById('numpadValue');
+    const numpadSub = document.getElementById('numpadSub');
+    const numpadGrid = document.getElementById('numpadGrid');
+    const numpadCloseBtn = document.getElementById('numpadCloseBtn');
+    const numpadCancelBtn = document.getElementById('numpadCancelBtn');
+    const numpadRemoveBtn = document.getElementById('numpadRemoveBtn');
+    const numpadSaveBtn = document.getElementById('numpadSaveBtn');
+    const reviewOverlay = document.getElementById('reviewOverlay');
+    const reviewTitle = document.getElementById('reviewTitle');
+    const reviewNote = document.getElementById('reviewNote');
+    const orderCustomerFields = document.getElementById('orderCustomerFields');
+    const orderCustomerInput = document.getElementById('orderCustomerInput');
+    const orderNotesInput = document.getElementById('orderNotesInput');
+    const reviewList = document.getElementById('reviewList');
+    const reviewTotals = document.getElementById('reviewTotals');
+    const reviewCloseBtn = document.getElementById('reviewCloseBtn');
+    const reviewClearBtn = document.getElementById('reviewClearBtn');
+    const reviewCopyBtn = document.getElementById('reviewCopyBtn');
+    const reviewSubmitBtn = document.getElementById('reviewSubmitBtn');
+    const toastEl = document.getElementById('toast');
 
     // Pure-JS SHA-256 & 2-code decryption (works on HTTPS and file:// without crypto.subtle)
     const SHA256_K = new Uint32Array([
@@ -1932,9 +2648,77 @@
       return JSON.parse(utf8Decoder.decode(body));
     }
 
+    function unwrapPriceKey(wrappingKeyBytes) {
+      const wrapped = base64ToBytes(WRAPPED_PRICE_KEY);
+      const mask = sha256Bytes(concatBytes(utf8Bytes('WRAP:'), wrappingKeyBytes));
+      const out = new Uint8Array(wrapped.length);
+      for (let i = 0; i < wrapped.length; i++) {
+        out[i] = wrapped[i] ^ mask[i];
+      }
+      return out;
+    }
+
+    function showToast(msg) {
+      if (!toastEl) return;
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 2600);
+    }
+
+    function resetMockupSession() {
+      stockEdits.clear();
+      orderLines.clear();
+      for (let i = 0; i < PRODUCTS.length; i++) {
+        PRODUCTS[i].qty = PRODUCTS[i].baseQty;
+      }
+      if (orderCustomerInput) orderCustomerInput.value = '';
+      if (orderNotesInput) orderNotesInput.value = '';
+      closeNumpad();
+      closeReview();
+    }
+
+    function syncModeUI() {
+      document.body.classList.toggle('mode-stock', state.mode === 'stock');
+      document.body.classList.toggle('mode-order', state.mode === 'order');
+
+      if (state.mode === 'stock') {
+        modePill.textContent = 'Stock Take · Mockup';
+        modeHint.textContent = 'Tap any item to enter a new count (clears on each login)';
+        const count = stockEdits.size;
+        modeSummaryText.textContent = count === 1 ? '1 item counted' : `${count} items counted`;
+        modeReviewBtn.textContent = `Review Changes (${count})`;
+        modeReviewBtn.disabled = count === 0;
+      } else if (state.mode === 'order') {
+        modePill.textContent = 'Order Taking · Mockup';
+        modeHint.textContent = 'Tap any item to add qty to order (clears on each login)';
+        const lines = orderLines.size;
+        let subEx = 0;
+        let totalUnits = 0;
+        for (const [idx, qty] of orderLines.entries()) {
+          const p = PRODUCTS[idx];
+          totalUnits += qty;
+          if (p && p.price > 0) subEx += p.price * qty;
+        }
+        const shownTotal = state.incVat ? subEx * VAT_RATE : subEx;
+        const vatSuffix = state.incVat ? 'inc. VAT' : 'ex. VAT';
+        modeSummaryText.textContent = lines === 0
+          ? 'Empty order'
+          : `${lines} ${lines === 1 ? 'line' : 'lines'} (${totalUnits} units) · €${shownTotal.toFixed(2)} ${vatSuffix}`;
+        modeReviewBtn.textContent = `View Order (${lines})`;
+        modeReviewBtn.disabled = lines === 0;
+      }
+    }
+
     function applyAccess(mode, keyBytes) {
-      if (mode === 'price') {
-        const prices = decryptPrices(keyBytes);
+      resetMockupSession();
+      state.mode = mode;
+
+      if (mode === 'price' || mode === 'order') {
+        const priceKeyBytes = mode === 'order' ? unwrapPriceKey(keyBytes) : keyBytes;
+        const prices = decryptPrices(priceKeyBytes);
         if (!Array.isArray(prices) || prices.length !== PRODUCTS.length) {
           throw new Error('Unexpected price payload length');
         }
@@ -1946,7 +2730,7 @@
         try {
           hideParam = new URLSearchParams(window.location.search).get('prices') === 'hide';
         } catch {}
-        state.showPrices = !hideParam;
+        state.showPrices = mode === 'order' ? true : !hideParam;
         document.body.classList.remove('no-price-access');
       } else {
         for (let i = 0; i < PRODUCTS.length; i++) {
@@ -1956,6 +2740,7 @@
         state.showPrices = false;
         document.body.classList.add('no-price-access');
       }
+      syncModeUI();
       document.body.classList.remove('locked');
       authOverlay.classList.add('hidden');
       authError.textContent = '';
@@ -1965,11 +2750,14 @@
       try {
         localStorage.removeItem(ACCESS_STORAGE_KEY);
       } catch {}
+      resetMockupSession();
       for (let i = 0; i < PRODUCTS.length; i++) {
         PRODUCTS[i].price = 0;
       }
+      state.mode = 'view';
       state.priceAccess = false;
       state.showPrices = false;
+      syncModeUI();
       document.body.classList.add('locked', 'no-price-access');
       syncPriceUI();
       authOverlay.classList.remove('hidden');
@@ -2717,28 +3505,53 @@
           ? `<span class="price-val poa">POA</span>`
           : `<span class="price-val">${priceObj.text}</span><span class="price-vat">${vatLabel}</span>`;
 
+        const isStockEdited = state.mode === 'stock' && stockEdits.has(p.idx);
+        const orderQty = state.mode === 'order' ? (orderLines.get(p.idx) || 0) : 0;
+        const cardStateCls = isStockEdited ? ' is-edited' : (orderQty > 0 ? ' is-ordered' : '');
+
+        let cardStockBadge = `<span class="stock-badge ${qtyObj.cls}">${qtyObj.mobileText}</span>`;
+        let rowStockBadge = `<span class="stock-badge ${qtyObj.cls}">${qtyObj.text}</span>`;
+        if (isStockEdited) {
+          const newQty = stockEdits.get(p.idx);
+          cardStockBadge = `<span class="stock-badge edited">Count: ${newQty.toLocaleString()} (was ${p.baseQty.toLocaleString()})</span>`;
+          rowStockBadge = `<span class="stock-badge edited">${newQty.toLocaleString()} (was ${p.baseQty.toLocaleString()})</span>`;
+        }
+
+        let cardRightMeta = `<span class="card-cat" title="${catHtml}">${catHtml}</span>`;
+        if (orderQty > 0) {
+          cardRightMeta = `<span class="order-qty-pill">Order: ${orderQty.toLocaleString()}</span>`;
+        } else if (state.mode === 'stock' && !isStockEdited) {
+          cardRightMeta = `<span class="card-tap-hint">Tap to count</span>`;
+        } else if (state.mode === 'order') {
+          cardRightMeta = `<span class="card-tap-hint">Tap to order</span>`;
+        }
+
+        const rowDescExtra = orderQty > 0
+          ? ` <span class="order-qty-pill" style="margin-left:6px;">Order: ${orderQty.toLocaleString()}</span>`
+          : '';
+
         cardsHtml.push(`
-          <article class="product-card">
+          <article class="product-card${cardStateCls}" data-idx="${p.idx}">
             <div class="card-top">
               <span class="code-badge">${codeHtml}</span>
               <div class="price-block">${priceHtml}</div>
             </div>
             <div class="card-desc">${descHtml}</div>
             <div class="card-meta">
-              <span class="stock-badge ${qtyObj.cls}">${qtyObj.mobileText}</span>
-              <span class="card-cat" title="${catHtml}">${catHtml}</span>
+              ${cardStockBadge}
+              ${cardRightMeta}
             </div>
           </article>
         `);
 
         rowsHtml.push(`
-          <tr>
+          <tr class="${cardStateCls.trim()}" data-idx="${p.idx}">
             <td class="col-code">
               <span class="code-badge">${codeHtml}</span>
             </td>
-            <td class="col-desc">${descHtml}</td>
+            <td class="col-desc">${descHtml}${rowDescExtra}</td>
             <td class="col-qty num">
-              <span class="stock-badge ${qtyObj.cls}">${qtyObj.text}</span>
+              ${rowStockBadge}
             </td>
             <td class="col-price num">
               <div class="price-block">${priceHtml}</div>
@@ -2749,6 +3562,7 @@
 
       cardList.innerHTML = cardsHtml.join('');
       tableBody.innerHTML = rowsHtml.join('');
+      syncModeUI();
 
       // Load more buttons
       if (showing < total) {
@@ -2973,6 +3787,378 @@
       }
     }, { passive: true });
 
+    // Number Pad Modal (Stock Take & Order Taking)
+    function openNumpad(idx) {
+      const p = PRODUCTS[idx];
+      if (!p) return;
+      numpadState.idx = idx;
+      numpadState.fresh = true;
+
+      numpadCode.textContent = p.code;
+      numpadDesc.textContent = p.desc;
+
+      if (state.mode === 'stock') {
+        const currentCount = stockEdits.has(idx) ? stockEdits.get(idx) : p.baseQty;
+        numpadState.inputStr = String(Math.max(0, Math.round(currentCount)));
+        numpadModeTag.textContent = 'Stock Take Count';
+        numpadMeta.textContent = `Current Sage stock: ${p.baseQty.toLocaleString()}`;
+        numpadSaveBtn.textContent = 'Save Count';
+        numpadRemoveBtn.textContent = 'Reset';
+        numpadRemoveBtn.style.display = stockEdits.has(idx) ? '' : 'none';
+      } else if (state.mode === 'order') {
+        const existingQty = orderLines.get(idx) || 0;
+        numpadState.inputStr = existingQty > 0 ? String(existingQty) : '1';
+        numpadModeTag.textContent = 'Order Quantity';
+        const priceObj = formatPrice(p.price);
+        const vatLabel = state.incVat ? 'inc. VAT' : 'ex. VAT';
+        const priceText = priceObj.isPoa ? 'POA' : `${priceObj.text} ${vatLabel}`;
+        numpadMeta.textContent = `In stock: ${p.baseQty.toLocaleString()} · ${priceText}`;
+        numpadSaveBtn.textContent = existingQty > 0 ? 'Update Order' : 'Add to Order';
+        numpadRemoveBtn.textContent = 'Remove';
+        numpadRemoveBtn.style.display = existingQty > 0 ? '' : 'none';
+      }
+
+      updateNumpadDisplay();
+      numpadOverlay.classList.add('open');
+    }
+
+    function closeNumpad() {
+      numpadState.idx = null;
+      if (numpadOverlay) numpadOverlay.classList.remove('open');
+    }
+
+    function updateNumpadDisplay() {
+      const p = numpadState.idx !== null ? PRODUCTS[numpadState.idx] : null;
+      if (!p) return;
+      const val = numpadState.inputStr === '' ? 0 : parseInt(numpadState.inputStr, 10);
+      numpadValue.textContent = val.toLocaleString();
+      numpadSub.className = 'numpad-sub';
+
+      if (state.mode === 'stock') {
+        const diff = val - p.baseQty;
+        if (diff === 0) {
+          numpadSub.textContent = 'Matches Sage stock';
+        } else if (diff > 0) {
+          numpadSub.textContent = `+${diff.toLocaleString()} vs Sage (${p.baseQty.toLocaleString()})`;
+          numpadSub.classList.add('diff-pos');
+        } else {
+          numpadSub.textContent = `${diff.toLocaleString()} vs Sage (${p.baseQty.toLocaleString()})`;
+          numpadSub.classList.add('diff-neg');
+        }
+      } else if (state.mode === 'order') {
+        if (val <= 0) {
+          numpadSub.textContent = 'Enter quantity (0 removes from order)';
+        } else if (p.price > 0) {
+          const unit = state.incVat ? p.price * VAT_RATE : p.price;
+          const vatLabel = state.incVat ? 'inc. VAT' : 'ex. VAT';
+          const stockWarn = val > p.baseQty ? ` · Exceeds stock (${p.baseQty})` : '';
+          numpadSub.textContent = `Line total: €${(unit * val).toFixed(2)} ${vatLabel}${stockWarn}`;
+          if (val > p.baseQty) numpadSub.classList.add('diff-neg');
+        } else {
+          numpadSub.textContent = `Qty: ${val.toLocaleString()} (POA)`;
+        }
+      }
+    }
+
+    function handleNumpadKey(key) {
+      if (numpadState.idx === null) return;
+      if (key === 'clear') {
+        numpadState.inputStr = '0';
+        numpadState.fresh = true;
+      } else if (key === 'back') {
+        if (numpadState.fresh || numpadState.inputStr.length <= 1) {
+          numpadState.inputStr = '0';
+          numpadState.fresh = true;
+        } else {
+          numpadState.inputStr = numpadState.inputStr.slice(0, -1);
+        }
+      } else if (/^\d$/.test(key)) {
+        if (numpadState.fresh || numpadState.inputStr === '0') {
+          numpadState.inputStr = key;
+          numpadState.fresh = false;
+        } else if (numpadState.inputStr.length < 6) {
+          numpadState.inputStr += key;
+        }
+      }
+      updateNumpadDisplay();
+    }
+
+    function saveNumpad() {
+      const idx = numpadState.idx;
+      if (idx === null) return;
+      const p = PRODUCTS[idx];
+      const val = numpadState.inputStr === '' ? 0 : parseInt(numpadState.inputStr, 10);
+
+      if (state.mode === 'stock') {
+        if (val === p.baseQty) {
+          stockEdits.delete(idx);
+          p.qty = p.baseQty;
+          showToast(`${p.code} matches Sage (${p.baseQty})`);
+        } else {
+          stockEdits.set(idx, val);
+          p.qty = val;
+          showToast(`Updated ${p.code}: ${p.baseQty} → ${val}`);
+        }
+      } else if (state.mode === 'order') {
+        if (val <= 0) {
+          orderLines.delete(idx);
+          showToast(`Removed ${p.code} from order`);
+        } else {
+          orderLines.set(idx, val);
+          showToast(`Order: ${val} × ${p.code}`);
+        }
+      }
+
+      closeNumpad();
+      render();
+      if (reviewOverlay.classList.contains('open')) {
+        renderReview();
+      }
+    }
+
+    function removeFromNumpad() {
+      const idx = numpadState.idx;
+      if (idx === null) return;
+      const p = PRODUCTS[idx];
+      if (state.mode === 'stock') {
+        stockEdits.delete(idx);
+        p.qty = p.baseQty;
+        showToast(`Reset ${p.code} to Sage stock (${p.baseQty})`);
+      } else if (state.mode === 'order') {
+        orderLines.delete(idx);
+        showToast(`Removed ${p.code} from order`);
+      }
+      closeNumpad();
+      render();
+      if (reviewOverlay.classList.contains('open')) {
+        renderReview();
+      }
+    }
+
+    // Review / Order Summary Modal
+    function openReview() {
+      renderReview();
+      reviewOverlay.classList.add('open');
+    }
+
+    function closeReview() {
+      if (reviewOverlay) reviewOverlay.classList.remove('open');
+    }
+
+    function buildSummaryText() {
+      if (state.mode === 'stock') {
+        const lines = ['STOCK TAKE MOCKUP SUMMARY'];
+        for (const [idx, newQty] of stockEdits.entries()) {
+          const p = PRODUCTS[idx];
+          const diff = newQty - p.baseQty;
+          const sign = diff > 0 ? '+' : '';
+          lines.push(`${p.code} | ${p.desc} | Sage: ${p.baseQty} -> Count: ${newQty} (${sign}${diff})`);
+        }
+        return lines.join('\n');
+      }
+      const customer = (orderCustomerInput.value || '').trim();
+      const notes = (orderNotesInput.value || '').trim();
+      const lines = ['SALES ORDER (MOCKUP)'];
+      if (customer) lines.push(`Customer: ${customer}`);
+      if (notes) lines.push(`Notes: ${notes}`);
+      lines.push('');
+      let subEx = 0;
+      for (const [idx, qty] of orderLines.entries()) {
+        const p = PRODUCTS[idx];
+        const lineEx = p.price > 0 ? p.price * qty : 0;
+        subEx += lineEx;
+        const pricePart = p.price > 0 ? ` @ €${p.price.toFixed(2)} = €${lineEx.toFixed(2)} ex. VAT` : ' (POA)';
+        lines.push(`${qty} x ${p.code} — ${p.desc}${pricePart}`);
+      }
+      const vat = subEx * (VAT_RATE - 1);
+      lines.push('');
+      lines.push(`Subtotal (Ex. VAT): €${subEx.toFixed(2)}`);
+      lines.push(`VAT (23%): €${vat.toFixed(2)}`);
+      lines.push(`Total (Inc. VAT): €${(subEx + vat).toFixed(2)}`);
+      return lines.join('\n');
+    }
+
+    function renderReview() {
+      if (state.mode === 'stock') {
+        reviewTitle.textContent = `Stock Take Changes (${stockEdits.size})`;
+        reviewNote.textContent = 'Mockup only — nothing is sent to Sage yet, and changes clear on each login.';
+        orderCustomerFields.style.display = 'none';
+        reviewSubmitBtn.textContent = 'Push to Sage (Mockup)';
+
+        if (stockEdits.size === 0) {
+          reviewList.innerHTML = '<div class="review-note">No stock changes recorded yet. Tap any product to count it.</div>';
+          reviewTotals.innerHTML = '';
+          reviewSubmitBtn.disabled = true;
+          reviewCopyBtn.disabled = true;
+          return;
+        }
+        reviewSubmitBtn.disabled = false;
+        reviewCopyBtn.disabled = false;
+
+        let netDiff = 0;
+        const html = [];
+        for (const [idx, newQty] of stockEdits.entries()) {
+          const p = PRODUCTS[idx];
+          const diff = newQty - p.baseQty;
+          netDiff += diff;
+          const sign = diff > 0 ? '+' : '';
+          html.push(`
+            <div class="review-item">
+              <div class="review-item-info">
+                <div class="review-item-code">${escapeHtml(p.code)}</div>
+                <div class="review-item-desc">${escapeHtml(p.desc)}</div>
+              </div>
+              <div class="review-item-right">
+                <button type="button" class="review-qty-btn" data-edit-idx="${idx}" title="Edit count">
+                  ${p.baseQty} → ${newQty} (${sign}${diff})
+                </button>
+                <button type="button" class="review-remove-btn" data-remove-idx="${idx}" aria-label="Undo">&times;</button>
+              </div>
+            </div>
+          `);
+        }
+        reviewList.innerHTML = html.join('');
+        const netSign = netDiff > 0 ? '+' : '';
+        reviewTotals.innerHTML = `
+          <div class="review-total-row"><span>Items adjusted</span><span>${stockEdits.size}</span></div>
+          <div class="review-total-row grand"><span>Net stock variance</span><span>${netSign}${netDiff.toLocaleString()} units</span></div>
+        `;
+      } else if (state.mode === 'order') {
+        reviewTitle.textContent = `Current Order (${orderLines.size})`;
+        reviewNote.textContent = 'Salesman order mockup — clears automatically on each login.';
+        orderCustomerFields.style.display = 'grid';
+        reviewSubmitBtn.textContent = 'Submit Order (Mockup)';
+
+        if (orderLines.size === 0) {
+          reviewList.innerHTML = '<div class="review-note">No items in order yet. Tap any product to add quantities.</div>';
+          reviewTotals.innerHTML = '';
+          reviewSubmitBtn.disabled = true;
+          reviewCopyBtn.disabled = true;
+          return;
+        }
+        reviewSubmitBtn.disabled = false;
+        reviewCopyBtn.disabled = false;
+
+        let subEx = 0;
+        let totalUnits = 0;
+        const html = [];
+        for (const [idx, qty] of orderLines.entries()) {
+          const p = PRODUCTS[idx];
+          totalUnits += qty;
+          const lineEx = p.price > 0 ? p.price * qty : 0;
+          subEx += lineEx;
+          const lineDisplay = p.price > 0
+            ? `€${(state.incVat ? lineEx * VAT_RATE : lineEx).toFixed(2)}`
+            : 'POA';
+          html.push(`
+            <div class="review-item">
+              <div class="review-item-info">
+                <div class="review-item-code">${escapeHtml(p.code)}</div>
+                <div class="review-item-desc">${escapeHtml(p.desc)}</div>
+              </div>
+              <div class="review-item-right">
+                <button type="button" class="review-qty-btn" data-edit-idx="${idx}" title="Edit quantity">
+                  ${qty} × ${lineDisplay}
+                </button>
+                <button type="button" class="review-remove-btn" data-remove-idx="${idx}" aria-label="Remove">&times;</button>
+              </div>
+            </div>
+          `);
+        }
+        reviewList.innerHTML = html.join('');
+        const vat = subEx * (VAT_RATE - 1);
+        reviewTotals.innerHTML = `
+          <div class="review-total-row"><span>Lines / Units</span><span>${orderLines.size} / ${totalUnits.toLocaleString()}</span></div>
+          <div class="review-total-row"><span>Subtotal (Ex. VAT)</span><span>€${subEx.toFixed(2)}</span></div>
+          <div class="review-total-row"><span>VAT (23%)</span><span>€${vat.toFixed(2)}</span></div>
+          <div class="review-total-row grand"><span>Total (Inc. VAT)</span><span>€${(subEx + vat).toFixed(2)}</span></div>
+        `;
+      }
+    }
+
+    // Card & table row taps open Number Pad in Stock Take / Order Taking modes
+    cardList.addEventListener('click', (e) => {
+      if (state.mode !== 'stock' && state.mode !== 'order') return;
+      const card = e.target.closest('.product-card[data-idx]');
+      if (!card) return;
+      openNumpad(Number(card.dataset.idx));
+    });
+
+    tableBody.addEventListener('click', (e) => {
+      if (state.mode !== 'stock' && state.mode !== 'order') return;
+      const row = e.target.closest('tr[data-idx]');
+      if (!row) return;
+      openNumpad(Number(row.dataset.idx));
+    });
+
+    numpadGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('.numpad-key[data-key]');
+      if (!btn) return;
+      handleNumpadKey(btn.dataset.key);
+    });
+
+    numpadSaveBtn.addEventListener('click', saveNumpad);
+    numpadCancelBtn.addEventListener('click', closeNumpad);
+    numpadCloseBtn.addEventListener('click', closeNumpad);
+    numpadRemoveBtn.addEventListener('click', removeFromNumpad);
+    numpadOverlay.addEventListener('click', (e) => {
+      if (e.target === numpadOverlay) closeNumpad();
+    });
+
+    modeReviewBtn.addEventListener('click', openReview);
+    reviewCloseBtn.addEventListener('click', closeReview);
+    reviewOverlay.addEventListener('click', (e) => {
+      if (e.target === reviewOverlay) closeReview();
+    });
+
+    reviewList.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('[data-edit-idx]');
+      if (editBtn) {
+        openNumpad(Number(editBtn.dataset.editIdx));
+        return;
+      }
+      const remBtn = e.target.closest('[data-remove-idx]');
+      if (remBtn) {
+        const idx = Number(remBtn.dataset.removeIdx);
+        const p = PRODUCTS[idx];
+        if (state.mode === 'stock') {
+          stockEdits.delete(idx);
+          if (p) p.qty = p.baseQty;
+        } else if (state.mode === 'order') {
+          orderLines.delete(idx);
+        }
+        render();
+        renderReview();
+      }
+    });
+
+    reviewClearBtn.addEventListener('click', () => {
+      resetMockupSession();
+      render();
+      showToast(state.mode === 'stock' ? 'Cleared all stock take changes' : 'Cleared order');
+    });
+
+    reviewCopyBtn.addEventListener('click', () => {
+      const text = buildSummaryText();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => showToast('Summary copied to clipboard'))
+          .catch(() => showToast('Could not copy to clipboard'));
+      } else {
+        showToast('Clipboard not available in this browser');
+      }
+    });
+
+    reviewSubmitBtn.addEventListener('click', () => {
+      if (state.mode === 'stock') {
+        showToast(`Mockup only — ${stockEdits.size} stock adjustment(s) ready for Sage`);
+      } else {
+        const customer = (orderCustomerInput.value || '').trim();
+        const who = customer ? ` for ${customer}` : '';
+        showToast(`Mockup only — ${orderLines.size}-line order${who} ready to submit`);
+      }
+    });
+
     // Access code modal & Switch Code button
     authForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -2989,6 +4175,10 @@
         mode = 'price';
       } else if (vHash === VIEW_CODE_HASH) {
         mode = 'view';
+      } else if (vHash === STOCK_CODE_HASH) {
+        mode = 'stock';
+      } else if (vHash === ORDER_CODE_HASH) {
+        mode = 'order';
       }
       if (!mode) {
         authError.textContent = 'Invalid access code. Please check and try again.';
@@ -2998,11 +4188,16 @@
       try {
         applyAccess(mode, keyBytes);
         try {
-          localStorage.setItem(ACCESS_STORAGE_KEY, JSON.stringify({
-            salt: AUTH_SALT,
-            mode,
-            keyHex: bytesToHex(keyBytes),
-          }));
+          if (mode === 'price' || mode === 'view') {
+            localStorage.setItem(ACCESS_STORAGE_KEY, JSON.stringify({
+              salt: AUTH_SALT,
+              mode,
+              keyHex: bytesToHex(keyBytes),
+            }));
+          } else {
+            // Mockup modes do not persist login so changes always start fresh on each login.
+            localStorage.removeItem(ACCESS_STORAGE_KEY);
+          }
         } catch {}
         syncPriceUI();
         syncCategoryUI();
@@ -3022,10 +4217,33 @@
       lockCatalogue();
     });
 
-    // Keyboard shortcuts: '/' focuses search, Escape clears
+    // Keyboard shortcuts: Number Pad input, Escape closes modals, '/' focuses search
     document.addEventListener('keydown', (e) => {
       if (document.body.classList.contains('locked')) return;
-      if (e.key === '/' && document.activeElement !== searchInput && document.activeElement.tagName !== 'SELECT') {
+      if (numpadOverlay.classList.contains('open')) {
+        if (/^\d$/.test(e.key)) {
+          e.preventDefault();
+          handleNumpadKey(e.key);
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          handleNumpadKey('back');
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          saveNumpad();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          closeNumpad();
+        }
+        return;
+      }
+      if (reviewOverlay.classList.contains('open')) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeReview();
+        }
+        return;
+      }
+      if (e.key === '/' && document.activeElement !== searchInput && document.activeElement.tagName !== 'SELECT' && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
         searchInput.focus();
       } else if (e.key === 'Escape' && document.activeElement === searchInput && state.query) {

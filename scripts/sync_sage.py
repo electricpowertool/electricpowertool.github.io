@@ -296,6 +296,8 @@ def main() -> None:
     parser.add_argument("--title", default=os.environ.get("CATALOG_TITLE") or "Electric Power Tool Co. Ltd.")
     parser.add_argument("--view-code", default=os.environ.get("CATALOG_VIEW_CODE") or "EPT100")
     parser.add_argument("--price-code", default=os.environ.get("CATALOG_PRICE_CODE") or "EPT749")
+    parser.add_argument("--stock-code", default=os.environ.get("CATALOG_STOCK_CODE") or "EPT500")
+    parser.add_argument("--order-code", default=os.environ.get("CATALOG_ORDER_CODE") or "EPT900")
     parser.add_argument("--out", default=str(ROOT / "index.html"))
     parser.add_argument("--force", action="store_true", help="Rebuild index.html even if data fingerprint is unchanged.")
     parser.add_argument(
@@ -393,6 +395,8 @@ def main() -> None:
         title=args.title,
         view_code=args.view_code,
         price_code=args.price_code,
+        stock_code=args.stock_code,
+        order_code=args.order_code,
     )
 
     old_fingerprint = fingerprint_path.read_text(encoding="utf-8").strip() if fingerprint_path.exists() else ""
@@ -416,6 +420,8 @@ def main() -> None:
         title=args.title,
         view_code=args.view_code,
         price_code=args.price_code,
+        stock_code=args.stock_code,
+        order_code=args.order_code,
     )
     fingerprint_path.write_text(new_fingerprint + "\n", encoding="utf-8")
     size_kb = output_path.stat().st_size / 1024

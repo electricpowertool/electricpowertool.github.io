@@ -48,6 +48,13 @@ def verify_hash(key: bytes) -> str:
     return hashlib.sha256(b"VERIFY:" + key).hexdigest()
 
 
+def wrap_key(secret_key: bytes, wrapping_key: bytes) -> str:
+    """XOR-wraps a 32-byte key under another derived key so multiple authorized codes can decrypt prices."""
+    mask = hashlib.sha256(b"WRAP:" + wrapping_key).digest()
+    wrapped = bytes(a ^ b for a, b in zip(secret_key, mask))
+    return base64.b64encode(wrapped).decode("ascii")
+
+
 def encrypt_prices(prices: list[float], key: bytes) -> str:
     plaintext = json.dumps(prices, separators=(",", ":")).encode("utf-8")
     mac = hashlib.sha256(b"MAC:" + plaintext).digest()[:16]
@@ -70,6 +77,8 @@ def compute_fingerprint(
     title: str,
     view_code: str,
     price_code: str,
+    stock_code: str = "EPT500",
+    order_code: str = "EPT900",
 ) -> str:
     """Keyed deterministic fingerprint of catalogue inputs so unchanged builds are skipped without leaking prices."""
     key = derive_key("fingerprint", price_code)
@@ -77,6 +86,8 @@ def compute_fingerprint(
         {
             "title": title,
             "view_code": normalize_code(view_code),
+            "stock_code": normalize_code(stock_code),
+            "order_code": normalize_code(order_code),
             "template_sha256": hashlib.sha256(template_text.encode("utf-8")).hexdigest(),
             "products": products,
             "prices": prices,
@@ -95,15 +106,29 @@ def render_catalog(
     title: str,
     view_code: str,
     price_code: str,
+    stock_code: str = "EPT500",
+    order_code: str = "EPT900",
 ) -> int:
-    if normalize_code(view_code) == normalize_code(price_code):
-        raise ValueError("view-code and price-code must be different")
+    codes = {
+        normalize_code(view_code),
+        normalize_code(price_code),
+        normalize_code(stock_code),
+        normalize_code(order_code),
+    }
+    if len(codes) < 4:
+        raise ValueError("view-code, price-code, stock-code, and order-code must all be different")
 
     salt = secrets.token_hex(8)
     view_key = derive_key(salt, view_code)
     price_key = derive_key(salt, price_code)
+    stock_key = derive_key(salt, stock_code)
+    order_key = derive_key(salt, order_code)
+
     view_hash = verify_hash(view_key)
     price_hash = verify_hash(price_key)
+    stock_hash = verify_hash(stock_key)
+    order_hash = verify_hash(order_key)
+    wrapped_price_key = wrap_key(price_key, order_key)
     encrypted_prices = encrypt_prices(prices, price_key)
 
     template = template_path.read_text(encoding="utf-8")
@@ -117,6 +142,9 @@ def render_catalog(
         .replace("__AUTH_SALT__", salt)
         .replace("__VIEW_HASH__", view_hash)
         .replace("__PRICE_HASH__", price_hash)
+        .replace("__STOCK_HASH__", stock_hash)
+        .replace("__ORDER_HASH__", order_hash)
+        .replace("__WRAPPED_PRICE_KEY__", wrapped_price_key)
         .replace("__ENCRYPTED_PRICES__", encrypted_prices)
     )
     output_path.write_text(rendered, encoding="utf-8")
@@ -130,6 +158,8 @@ def build_catalog(
     title: str,
     view_code: str,
     price_code: str,
+    stock_code: str = "EPT500",
+    order_code: str = "EPT900",
 ) -> int:
     products = []
     prices = []
@@ -161,6 +191,8 @@ def build_catalog(
         title=title,
         view_code=view_code,
         price_code=price_code,
+        stock_code=stock_code,
+        order_code=order_code,
     )
 
 
@@ -189,6 +221,16 @@ def main() -> None:
         help="Access code for full catalogue with prices",
     )
     parser.add_argument(
+        "--stock-code",
+        default="EPT500",
+        help="Access code for stock take mockup mode",
+    )
+    parser.add_argument(
+        "--order-code",
+        default="EPT900",
+        help="Access code for salesman order-taking mockup mode",
+    )
+    parser.add_argument(
         "--out",
         default=str(here / "index.html"),
         help="Output HTML path",
@@ -202,6 +244,8 @@ def main() -> None:
         title=args.title,
         view_code=args.view_code,
         price_code=args.price_code,
+        stock_code=args.stock_code,
+        order_code=args.order_code,
     )
     size_kb = Path(args.out).stat().st_size / 1024
     print(f"Built {args.out} with {count} products ({size_kb:.1f} KB)")

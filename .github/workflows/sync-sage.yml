@@ -44,6 +44,8 @@ jobs:
           CATALOG_TITLE: ${{ vars.CATALOG_TITLE }}
           CATALOG_VIEW_CODE: ${{ vars.CATALOG_VIEW_CODE }}
           CATALOG_PRICE_CODE: ${{ vars.CATALOG_PRICE_CODE }}
+          CATALOG_STOCK_CODE: ${{ vars.CATALOG_STOCK_CODE }}
+          CATALOG_ORDER_CODE: ${{ vars.CATALOG_ORDER_CODE }}
         run: |
           ARGS=""
           if [ "${{ inputs.force_rebuild }}" = "true" ]; then
